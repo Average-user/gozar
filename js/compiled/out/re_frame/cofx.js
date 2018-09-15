@@ -34,23 +34,23 @@ re_frame.cofx.register = cljs.core.partial.call(null,re_frame.registrar.register
  * 
  */
 re_frame.cofx.inject_cofx = (function re_frame$cofx$inject_cofx(var_args){
-var args10717 = [];
-var len__8679__auto___10720 = arguments.length;
-var i__8680__auto___10721 = (0);
+var args10667 = [];
+var len__8679__auto___10670 = arguments.length;
+var i__8680__auto___10671 = (0);
 while(true){
-if((i__8680__auto___10721 < len__8679__auto___10720)){
-args10717.push((arguments[i__8680__auto___10721]));
+if((i__8680__auto___10671 < len__8679__auto___10670)){
+args10667.push((arguments[i__8680__auto___10671]));
 
-var G__10722 = (i__8680__auto___10721 + (1));
-i__8680__auto___10721 = G__10722;
+var G__10672 = (i__8680__auto___10671 + (1));
+i__8680__auto___10671 = G__10672;
 continue;
 } else {
 }
 break;
 }
 
-var G__10719 = args10717.length;
-switch (G__10719) {
+var G__10669 = args10667.length;
+switch (G__10669) {
 case 1:
 return re_frame.cofx.inject_cofx.cljs$core$IFn$_invoke$arity$1((arguments[(0)]));
 
@@ -60,7 +60,7 @@ return re_frame.cofx.inject_cofx.cljs$core$IFn$_invoke$arity$2((arguments[(0)]),
 
 break;
 default:
-throw (new Error([cljs.core.str.cljs$core$IFn$_invoke$arity$1("Invalid arity: "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(args10717.length)].join('')));
+throw (new Error([cljs.core.str.cljs$core$IFn$_invoke$arity$1("Invalid arity: "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(args10667.length)].join('')));
 
 }
 });
@@ -84,4 +84,4 @@ return cljs.core.assoc.call(null,coeffects,new cljs.core.Keyword(null,"db","db",
 }));
 re_frame.cofx.inject_db = re_frame.cofx.inject_cofx.call(null,new cljs.core.Keyword(null,"db","db",993250759));
 
-//# sourceMappingURL=cofx.js.map?rel=1537038596626
+//# sourceMappingURL=cofx.js.map?rel=1537053744870

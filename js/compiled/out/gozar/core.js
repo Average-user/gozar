@@ -27,4 +27,4 @@ return gozar.core.mount_root.call(null);
 });
 goog.exportSymbol('gozar.core.init', gozar.core.init);
 
-//# sourceMappingURL=core.js.map?rel=1537038598876
+//# sourceMappingURL=core.js.map?rel=1537053746690

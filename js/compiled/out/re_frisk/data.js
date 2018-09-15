@@ -19,4 +19,4 @@ if(typeof re_frisk.data.deb_data !== 'undefined'){
 re_frisk.data.deb_data = reagent.core.atom.call(null,new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"deb-win-closed?","deb-win-closed?",-1950516132),true], null));
 }
 
-//# sourceMappingURL=data.js.map?rel=1537038597666
+//# sourceMappingURL=data.js.map?rel=1537053745725

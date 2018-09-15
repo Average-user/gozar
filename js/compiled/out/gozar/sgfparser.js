@@ -6,10 +6,10 @@ gozar.sgfparser.char__GT_int = (function gozar$sgfparser$char__GT_int(c){
 return cljs.core.vec.call(null,"abcdefghijklmnopqrstuvwxyz").indexOf(c);
 });
 gozar.sgfparser.after = (function gozar$sgfparser$after(text,str){
-return cljs.core.ffirst.call(null,cljs.core.drop_while.call(null,cljs.core.comp.call(null,cljs.core.not,cljs.core.second),cljs.core.iterate.call(null,(function (p__10311){
-var vec__10312 = p__10311;
-var s = cljs.core.nth.call(null,vec__10312,(0),null);
-var b = cljs.core.nth.call(null,vec__10312,(1),null);
+return cljs.core.ffirst.call(null,cljs.core.drop_while.call(null,cljs.core.comp.call(null,cljs.core.not,cljs.core.second),cljs.core.iterate.call(null,(function (p__8994){
+var vec__8995 = p__8994;
+var s = cljs.core.nth.call(null,vec__8995,(0),null);
+var b = cljs.core.nth.call(null,vec__8995,(1),null);
 if((cljs.core.empty_QMARK_.call(null,s)) || (clojure.string.starts_with_QMARK_.call(null,s,str))){
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [s,true], null);
 } else {
@@ -41,8 +41,8 @@ return parseFloat($);
 }
 });
 gozar.sgfparser.player_names_and_ranks = (function gozar$sgfparser$player_names_and_ranks(xs){
-var f = (function (p1__10315_SHARP_){
-return cljs.core.second.call(null,cljs.core.first.call(null,cljs.core.re_seq.call(null,/\[(.*?)\]/,gozar.sgfparser.after.call(null,xs,p1__10315_SHARP_))));
+var f = (function (p1__8998_SHARP_){
+return cljs.core.second.call(null,cljs.core.first.call(null,cljs.core.re_seq.call(null,/\[(.*?)\]/,gozar.sgfparser.after.call(null,xs,p1__8998_SHARP_))));
 });
 return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"player-black","player-black",1843278047),[cljs.core.str.cljs$core$IFn$_invoke$arity$1(f.call(null,"PB")),cljs.core.str.cljs$core$IFn$_invoke$arity$1(" "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(f.call(null,"BR"))].join(''),new cljs.core.Keyword(null,"player-white","player-white",-1676124930),[cljs.core.str.cljs$core$IFn$_invoke$arity$1(f.call(null,"PW")),cljs.core.str.cljs$core$IFn$_invoke$arity$1(" "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(f.call(null,"WR"))].join('')], null);
 });
@@ -50,8 +50,8 @@ gozar.sgfparser.parse_line = (function gozar$sgfparser$parse_line(line){
 var coords = (function gozar$sgfparser$parse_line_$_coords(x){
 return cljs.core.mapv.call(null,gozar.sgfparser.char__GT_int,cljs.core.reverse.call(null,cljs.core.second.call(null,cljs.core.first.call(null,cljs.core.re_seq.call(null,/\[(.*?)\]/,x)))));
 });
-var G__10317 = cljs.core.first.call(null,line);
-switch (G__10317) {
+var G__9000 = cljs.core.first.call(null,line);
+switch (G__9000) {
 case "W":
 return new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"player","player",-97687400),new cljs.core.Keyword(null,"white","white",-483998618),new cljs.core.Keyword(null,"location","location",1815599388),coords.call(null,line)], null);
 
@@ -66,28 +66,28 @@ throw (new Error([cljs.core.str.cljs$core$IFn$_invoke$arity$1("No matching claus
 }
 });
 gozar.sgfparser.parse_game = (function gozar$sgfparser$parse_game(file_string){
-var moves = cljs.core.mapv.call(null,gozar.sgfparser.parse_line,cljs.core.filter.call(null,(function (p1__10319_SHARP_){
-return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, ["B",null,"W",null], null), null).call(null,cljs.core.first.call(null,p1__10319_SHARP_));
+var moves = cljs.core.mapv.call(null,gozar.sgfparser.parse_line,cljs.core.filter.call(null,(function (p1__9002_SHARP_){
+return new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 2, ["B",null,"W",null], null), null).call(null,cljs.core.first.call(null,p1__9002_SHARP_));
 }),clojure.string.split.call(null,file_string,/;/)));
 return cljs.core.reduce.call(null,cljs.core.conj,new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null,"handicap","handicap",653637002),gozar.sgfparser.get_handicap.call(null,file_string),new cljs.core.Keyword(null,"turn","turn",75759344),new cljs.core.Keyword(null,"player","player",-97687400).cljs$core$IFn$_invoke$arity$1(cljs.core.first.call(null,moves)),new cljs.core.Keyword(null,"moves","moves",927465255),moves,new cljs.core.Keyword(null,"komi","komi",1538616357),gozar.sgfparser.get_komi.call(null,file_string),new cljs.core.Keyword(null,"result","result",1415092211),gozar.sgfparser.get_result.call(null,file_string),new cljs.core.Keyword(null,"handicap-n","handicap-n",975463966),gozar.sgfparser.get_handicap_n.call(null,file_string)], null),gozar.sgfparser.player_names_and_ranks.call(null,file_string));
 });
-gozar.sgfparser.distance = (function gozar$sgfparser$distance(p__10320,p__10321){
-var vec__10328 = p__10320;
-var a = cljs.core.nth.call(null,vec__10328,(0),null);
-var b = cljs.core.nth.call(null,vec__10328,(1),null);
-var vec__10331 = p__10321;
-var c = cljs.core.nth.call(null,vec__10331,(0),null);
-var d = cljs.core.nth.call(null,vec__10331,(1),null);
-var abs = ((function (vec__10328,a,b,vec__10331,c,d){
+gozar.sgfparser.distance = (function gozar$sgfparser$distance(p__9003,p__9004){
+var vec__9011 = p__9003;
+var a = cljs.core.nth.call(null,vec__9011,(0),null);
+var b = cljs.core.nth.call(null,vec__9011,(1),null);
+var vec__9014 = p__9004;
+var c = cljs.core.nth.call(null,vec__9014,(0),null);
+var d = cljs.core.nth.call(null,vec__9014,(1),null);
+var abs = ((function (vec__9011,a,b,vec__9014,c,d){
 return (function (x){
 if((x < (0))){
 return ((-1) * x);
 } else {
 return x;
 }
-});})(vec__10328,a,b,vec__10331,c,d))
+});})(vec__9011,a,b,vec__9014,c,d))
 ;
 return (abs.call(null,(a - c)) + abs.call(null,(b - d)));
 });
 
-//# sourceMappingURL=sgfparser.js.map?rel=1537038595764
+//# sourceMappingURL=sgfparser.js.map?rel=1537053741430
