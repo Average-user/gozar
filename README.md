@@ -1,90 +1,22 @@
-# gozar
+# GOzar
 
-This is the gozar project.
+GOzar is a (in development) software to practice the game of Go (Baduk),
+implemented in Clojurescript. It is hosted in gh-pages so you can try it
+here:
 
-## Development mode
+The name comes from the spanish word "gozar" which means "enjoy".
 
-To start the Figwheel compiler, navigate to the project folder and run the following command in the terminal:
-
-```
-lein figwheel
-```
-
-Figwheel will automatically push cljs changes to the browser. The server will be available at [http://localhost:3449](http://localhost:3449) once Figwheel starts up. 
-
-Figwheel also starts `nREPL` using the value of the `:nrepl-port` in the `:figwheel`
-config found in `project.clj`. By default the port is set to `7002`.
-
-The figwheel server can have unexpected behaviors in some situations such as when using
-websockets. In this case it's recommended to run a standalone instance of a web server as follows:
-
-```
-lein do clean, run
-```
-
-The application will now be available at [http://localhost:3000](http://localhost:3000).
+[**Demo**](https://average-user.github.io/gozar/)
 
 
-### Optional development tools
+### How it works?
 
-Start the browser REPL:
+The user must select a `.sgf` file from its computer and proceed to the board.\
+At this moment the user will have the choice to either click the button `Show next move`
+and leave the work to the computer, or give it a try and guess where was
+the stone played in the game. A bar will be shown to indicate how close
+(Taxicab distance) from the actual move was. If the move is correct, the stone
+will be placed, otherwise you'll need to try again, or of course, click
+`Show next move`.
 
-```
-$ lein repl
-```
-The Jetty server can be started by running:
-
-```clojure
-(start-server)
-```
-and stopped by running:
-```clojure
-(stop-server)
-```
-
-
-## Building for release
-
-```
-lein do clean, uberjar
-```
-
-## Deploying to Heroku
-
-Make sure you have [Git](http://git-scm.com/downloads) and [Heroku toolbelt](https://toolbelt.heroku.com/) installed, then simply follow the steps below.
-
-Optionally, test that your application runs locally with foreman by running.
-
-```
-foreman start
-```
-
-Now, you can initialize your git repo and commit your application.
-
-```
-git init
-git add .
-git commit -m "init"
-```
-create your app on Heroku
-
-```
-heroku create
-```
-
-optionally, create a database for the application
-
-```
-heroku addons:add heroku-postgresql
-```
-
-The connection settings can be found at your [Heroku dashboard](https://dashboard.heroku.com/apps/) under the add-ons for the app.
-
-deploy the application
-
-```
-git push heroku master
-```
-
-Your application should now be deployed to Heroku!
-For further instructions see the [official documentation](https://devcenter.heroku.com/articles/clojure).
+![](https://github.com/Average-user/gozar/blob/master/resources/public/img/demo.png?raw=true)
