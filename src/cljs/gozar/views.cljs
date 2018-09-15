@@ -57,8 +57,8 @@
 
 (defn board-svg []
  [:div.field {:style {:margin-top "20px"}}
-  [:svg {:width    "100%"
-         :height   "100%"
+  [:svg {:width    "150%"
+         :height   "150%"
          :view-box "0 0 100 100"}
    [draw-board-base (u/apply-moves @board (subvec @moves 0 @move))
                     #(+ (* % 3) 2)]]])
@@ -69,14 +69,14 @@
             :min 0
             :max (count @moves)
             :value @move
-            :style {:width "90%"}
+            :style {:width "80%"}
             :on-change #(reset! move (js/parseInt (.-target.value %)))}]
    [:span
     (count @moves)]])
 
 (defn sgf-file-input []
   [:div.field
-   [:div.file.is-large
+   [:div.file
     [:label.file-label
      [:input.file-input
       {:type "file"
@@ -95,6 +95,7 @@
                                     (reset! moves (vec (:moves game)))
                                     (reset! board nb)
                                     (reset! move 0)
+                                    (reset! attempt nil)
                                     (swap! info (partial reduce conj)
                                            {:result       (:result game)
                                             :player-black (:player-black game)
@@ -112,7 +113,7 @@
    [:input {:type "checkbox"
             :on-change #(do (swap! view-mode not))}]
                            
-   "view mode"])
+   "View mode"])
 
 (defn info-table []
   [:table.table
@@ -141,8 +142,10 @@
                 (int (/ (* 100 (- 38 (distance @attempt nl)))
                         38)))]
      (cond 
-       (> n 90)        [:progress.progress.is-success {:min 0 :value n :max 100}]
-       :else           [:progress.progress.is-danger {:min 0 :value n :max 100}]))])
+       (> n 90)        [:progress.progress.is-success
+                        {:style {:width "80%"} :min 0 :value n :max 100}]
+       :else           [:progress.progress.is-danger
+                        {:style {:width "80%"} :min 0 :value n :max 100}]))])
 
 (defn show-next-move []
   [:div.field
@@ -153,17 +156,23 @@
 
 (defn main-panel []
   [:div {:style {:width "100%"}}
-   [:div.columns
-    [:div.column.is-one-third
-     [:center
-      [:h.title "GOzar"]]
-     [sgf-file-input]
+   [:div.columns {:style {:margin-left "10px"}}
+    [:div.column.is-half
+     [:center {:style {:margin "20px"}}
+      [:h.title.is-1 "GOzar"]]
      [info-table]
      [view-mode-checkbox]
      (when-not @view-mode
        [:div [how-close-bar]
              [show-next-move]])
      (when @view-mode
-       [moves-range])]
+       [moves-range])
+     [:div {:style {:margin-top "20px"}}
+      [sgf-file-input]]
+     [:center
+      [:a.icon {:href "https://github.com/Average-user/gozar#readme"
+                :style {:content "url(img/github.png)"
+                        :width   "32"
+                        :height  "32"}}]]]
     [:div.column
      [board-svg]]]])
