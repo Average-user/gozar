@@ -4,10 +4,9 @@ GOzar is a (in development) software to practice the game of Go (Baduk),
 implemented in Clojurescript. It is hosted in gh-pages so you can try it
 here:
 
-The name comes from the spanish word "gozar" which means "enjoy".
-
 [**Demo**](https://average-user.github.io/gozar/)
 
+The name comes from the spanish word "gozar" which means "enjoy".
 
 ### How it works?
 
