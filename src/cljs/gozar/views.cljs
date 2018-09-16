@@ -1,11 +1,9 @@
 (ns gozar.views
-  (:require [re-frame.core :as re-frame]
-            [reagent.core :as r]
+  (:require [reagent.core :as r]
             [gozar.util :as u]
             [gozar.sgfparser :as parser]
             [cljs.reader :as reader]))
 
-(def file-data  (r/atom ""))
 (def moves      (r/atom []))
 (def board      (r/atom u/initial-board))
 (def move       (r/atom 0))
@@ -17,7 +15,7 @@
                    :player-black "-"
                    :player-white "-"}))
 
-(def r 1.42)
+(def r 1.4)
 
 (defn distance [[a b] [c d]]
   (let [abs (fn [x] (if (< x 0) (* -1 x) x))]
@@ -32,20 +30,25 @@
        [[3 3] [15 15] [3 15] [15 3] [9 3] [3 9] [9 9] [9 15] [15 9]]))
 
 (defn draw-stones [f {:keys [stones turn]}]
-  (map (fn [[[y x] t]]
-         (case t
-           :black [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "black"}]]
-           :white [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "white"}]]
-           :free  [:g {:on-click #(when (not @view-mode)
-                                    (if (= (:location (get @moves @move)) [y x])
-                                      (do (swap! move inc)
-                                          (reset! attempt nil))
-                                      (reset! attempt [y x])))}
-                   (case [(not @view-mode) (= turn :white)]
-                     [true true] [:circle.w {:cx (f x) :cy (f y) :r r}]
-                     [true false] [:circle.b {:cx (f x) :cy (f y) :r r}]
-                     [:circle {:cx (f x) :cy (f y) :r r :fill "rgba(0,0,0,0)"}])]))
-      stones))
+  (let [lm (:location (get @moves (dec @move)))]
+    (map (fn [[[y x] t]]
+           (case t
+             :black [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "black"}]
+                     (when (= lm [y x])
+                       [:circle {:cx (f x) :cy (f y) :r (/ r 2) :stroke "white" :stroke-width "0.17" :fill "none"}])]
+             :white [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "white"}]
+                     (when (= lm [y x])
+                       [:circle {:cx (f x) :cy (f y) :r (/ r 2) :stroke "black" :stroke-width "0.17" :fill "none"}])]
+             :free  [:g {:on-click #(when (not @view-mode)
+                                      (if (= (:location (get @moves @move)) [y x])
+                                        (do (swap! move inc)
+                                            (reset! attempt nil))
+                                        (reset! attempt [y x])))}]
+                    (case [(not @view-mode) (= turn :white)]
+                      [true true] [:circle.w {:cx (f x) :cy (f y) :r r}]
+                      [true false] [:circle.b {:cx (f x) :cy (f y) :r r}]
+                      [:circle {:cx (f x) :cy (f y) :r r :fill "rgba(0,0,0,0)"}])))
+         stones)))
 
 (defn draw-board-base [{:keys [stones] :as board} amplifier]
   (into [:g [:rect {:x 0 :y 0 :width "58%" :height "58%" :fill "rgb(219,176,98)"}]]
@@ -87,20 +90,19 @@
                           file-reader (js/FileReader.)]
                       (set! (.-onload file-reader)
                             (fn [e]
-                              (do (reset! file-data (-> e .-target .-result))
-                                 (let [game (parser/parse-game @file-data)
-                                       nb   (u/create-board (:handicap game)
-                                                            (:turn game)
-                                                            (:komi game))]
-                                    (reset! moves (vec (:moves game)))
-                                    (reset! board nb)
-                                    (reset! move 0)
-                                    (reset! attempt nil)
-                                    (swap! info (partial reduce conj)
-                                           {:result       (:result game)
-                                            :player-black (:player-black game)
-                                            :player-white (:player-white game)})
-                                    (reset! handicap (:handicap-n game))))))
+                              (let [game (parser/parse-game (-> e .-target .-result))
+                                    nb   (u/create-board (:handicap game)
+                                                         (:turn game)
+                                                         (:komi game))]
+                                (reset! moves (vec (:moves game)))
+                                (reset! board nb)
+                                (reset! move 0)
+                                (reset! attempt nil)
+                                (swap! info (partial reduce conj)
+                                  {:result       (:result game)
+                                   :player-black (:player-black game)
+                                   :player-white (:player-white game)})
+                                (reset! handicap (:handicap-n game)))))
                       (.readAsText file-reader file)))}]
      [:span.file-cta
       [:span.file-icon
@@ -152,7 +154,7 @@
    [:a.button.is-outlined
     {:type "submit"
      :on-click #(swap! move inc)}
-    "Show me next move"]])
+    "Show next move"]])
 
 (defn main-panel []
   [:div {:style {:width "100%"}}
