@@ -1,21 +1,23 @@
 (ns gozar.views
   (:require [reagent.core :as r]
             [gozar.util :as u]
-            [gozar.sgfparser :as parser]
-            [cljs.reader :as reader]))
+            [goog.events :as events]
+            [gozar.sgfparser :as parser]))
 
-(def moves      (r/atom []))
-(def board      (r/atom u/initial-board))
-(def move       (r/atom 0))
-(def view-mode  (r/atom false))
-(def handicap   (r/atom "0"))
-(def attempt    (r/atom nil))
-
-(def info (r/atom {:result "-"
-                   :player-black "-"
-                   :player-white "-"}))
+(def moves     (r/atom []))
+(def board     (r/atom u/initial-board))
+(def move      (r/atom 0))
+(def handicap  (r/atom "0"))
+(def attempt   (r/atom nil))
+(def filename  (r/atom "No file selected yet"))
+(def info      (r/atom {:result       "-"
+                        :player-black "-"
+                        :player-white "-"}))
 
 (def r 1.4)
+
+(defn dec' [l x] (if (<= x l) 0 (dec x)))
+(defn inc' [l x] (if (>= x l) x (inc x)))
 
 (defn distance [[a b] [c d]]
   (let [abs (fn [x] (if (< x 0) (* -1 x) x))]
@@ -39,15 +41,14 @@
              :white [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "white"}]
                      (when (= lm [y x])
                        [:circle {:cx (f x) :cy (f y) :r (/ r 2) :stroke "black" :stroke-width "0.17" :fill "none"}])]
-             :free  [:g {:on-click #(when (not @view-mode)
-                                      (if (= (:location (get @moves @move)) [y x])
-                                        (do (swap! move inc)
-                                            (reset! attempt nil))
-                                        (reset! attempt [y x])))}]
-                    (case [(not @view-mode) (= turn :white)]
-                      [true true] [:circle.w {:cx (f x) :cy (f y) :r r}]
-                      [true false] [:circle.b {:cx (f x) :cy (f y) :r r}]
-                      [:circle {:cx (f x) :cy (f y) :r r :fill "rgba(0,0,0,0)"}])))
+             :free  [:g {:on-click #(if (= (:location (get @moves @move)) [y x])
+                                      (do (swap! move inc)
+                                          (reset! attempt nil))
+                                      (reset! attempt [y x]))}
+                     (case (= turn :white)
+                       true  [:circle.w {:cx (f x) :cy (f y) :r r}]
+                       false [:circle.b {:cx (f x) :cy (f y) :r r}]
+                       [:circle {:cx (f x) :cy (f y) :r r :fill "rgba(0,0,0,0)"}])]))
          stones)))
 
 (defn draw-board-base [{:keys [stones] :as board} amplifier]
@@ -67,30 +68,37 @@
                     #(+ (* % 3) 2)]]])
 
 (defn moves-range []
-  [:div.field
-   [:input {:type "range"
-            :min 0
-            :max (count @moves)
-            :value @move
-            :style {:width "80%"}
-            :on-change #(reset! move (js/parseInt (.-target.value %)))}]
-   [:span
-    (count @moves)]])
+  [:div.field {:style {:width "80%"}}
+   [:center
+    [:input {:type "range"
+             :min 0
+             :max (count @moves)
+             :value @move
+             :style {:width "90%"}
+             :on-change #(reset! move (js/parseInt (.-target.value %)))}]
+    [:span
+     (count @moves)]
+    [:div
+     [:a.button {:on-click #(swap! move (partial dec' 0))}
+      [:span.icon.is-small
+       [:i.fa.fa-arrow-left]]]
+     [:a.button {:on-click #(swap! move (partial inc' (count @moves)))}
+      [:span.icon.is-small
+       [:i.fa.fa-arrow-right]]]]]])
 
 (defn sgf-file-input []
   [:div.field
-   [:div.file
+   [:div.file.has-name
     [:label.file-label
      [:input.file-input
       {:type "file"
        :accept ".sgf"
-       :value "Upload SGF File:"
        :on-change (fn [e]
                     (let [file        (first (array-seq (.. e -target -files)))
                           file-reader (js/FileReader.)]
                       (set! (.-onload file-reader)
-                            (fn [e]
-                              (let [game (parser/parse-game (-> e .-target .-result))
+                            (fn [e']
+                              (let [game (parser/parse-game (-> e' .-target .-result))
                                     nb   (u/create-board (:handicap game)
                                                          (:turn game)
                                                          (:komi game))]
@@ -102,20 +110,16 @@
                                   {:result       (:result game)
                                    :player-black (:player-black game)
                                    :player-white (:player-white game)})
-                                (reset! handicap (:handicap-n game)))))
+                                (reset! handicap (:handicap-n game))
+                                (reset! filename (.-name file))))) 
                       (.readAsText file-reader file)))}]
      [:span.file-cta
       [:span.file-icon
-       [:i.fa.fa-upload]]
+       [:i.fas.fa-upload]]
       [:span.file-label
-       "Upload SGF"]]]]])
-
-(defn view-mode-checkbox []
-  [:label
-   [:input {:type "checkbox"
-            :on-change #(do (swap! view-mode not))}]
-                           
-   "View mode"])
+       "Upload SGF..."]]
+     [:span.file-name
+      @filename]]]])
 
 (defn info-table []
   [:table.table
@@ -149,32 +153,26 @@
        :else           [:progress.progress.is-danger
                         {:style {:width "80%"} :min 0 :value n :max 100}]))])
 
-(defn show-next-move []
-  [:div.field
-   [:a.button.is-outlined
-    {:type "submit"
-     :on-click #(swap! move inc)}
-    "Show next move"]])
-
 (defn main-panel []
+  (events/listen js/window "keydown"
+                 (fn [e]
+                   (let [key-code (.-keyCode e)]
+                     (when (#{37 39} key-code)
+                       (do (swap! move ({39 #(inc' (count @moves) %) 37 #(dec' 0 %)}
+                                        key-code))
+                           (reset! attempt nil))))))                       
   [:div {:style {:width "100%"}}
    [:div.columns {:style {:margin-left "10px"}}
     [:div.column.is-half
      [:center {:style {:margin "20px"}}
       [:h.title.is-1 "GOzar"]]
      [info-table]
-     [view-mode-checkbox]
-     (when-not @view-mode
-       [:div [how-close-bar]
-             [show-next-move]])
-     (when @view-mode
-       [moves-range])
+     [how-close-bar]
+     [moves-range]
      [:div {:style {:margin-top "20px"}}
       [sgf-file-input]]
-     [:center
+     [:center {:style {:margin-top "20px"}}
       [:a.icon {:href "https://github.com/Average-user/gozar#readme"
-                :style {:content "url(img/github.png)"
-                        :width   "32"
-                        :height  "32"}}]]]
+                :style {:content "url(img/github.png)" :width "32" :height "32"}}]]]
     [:div.column
      [board-svg]]]])
