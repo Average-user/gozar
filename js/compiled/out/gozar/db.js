@@ -1,0 +1,7 @@
+// Compiled by ClojureScript 1.9.542 {}
+goog.provide('gozar.db');
+goog.require('cljs.core');
+goog.require('gozar.util');
+gozar.db.default_db = cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null,"custom-move","custom-move",-1878986938),new cljs.core.Keyword(null,"moves","moves",927465255),new cljs.core.Keyword(null,"handicap","handicap",653637002),new cljs.core.Keyword(null,"move","move",-2110884309),new cljs.core.Keyword(null,"custom-moves","custom-moves",1173198063),new cljs.core.Keyword(null,"filename","filename",-1428840783),new cljs.core.Keyword(null,"info","info",-317069002),new cljs.core.Keyword(null,"analyze-mode","analyze-mode",607816089),new cljs.core.Keyword(null,"attempt","attempt",1611761308),new cljs.core.Keyword(null,"board","board",-1907017633)],[(0),cljs.core.PersistentVector.EMPTY,"0",(0),cljs.core.PersistentVector.EMPTY,"Not file selected",new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null,"result","result",1415092211),"-",new cljs.core.Keyword(null,"player-black","player-black",1843278047),"-",new cljs.core.Keyword(null,"player-white","player-white",-1676124930),"-"], null),false,null,gozar.util.initial_board]);
+
+//# sourceMappingURL=db.js.map?rel=1537411813744
