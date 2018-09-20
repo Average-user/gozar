@@ -46,7 +46,8 @@
       \B {:player :black :location (coords line)})))
 
 (defn parse-game [file-string]
-  (let [moves (->> (cs/split file-string #";")
+  (let [rem   #{\space \newline}
+        moves (->> (cs/split (cs/join (remove rem file-string)) #";")
                    (filter #(#{\W \B} (first %)))
                    (mapv parse-line))]
     (reduce conj
