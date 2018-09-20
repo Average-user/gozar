@@ -2,26 +2,24 @@
   (:require [reagent.core :as r]
             [gozar.util :as u]
             [goog.events :as events]
-            [gozar.sgfparser :as parser]))
-
-(def moves     (r/atom []))
-(def board     (r/atom u/initial-board))
-(def move      (r/atom 0))
-(def handicap  (r/atom "0"))
-(def attempt   (r/atom nil))
-(def filename  (r/atom "No file selected yet"))
-(def info      (r/atom {:result       "-"
-                        :player-black "-"
-                        :player-white "-"}))
+            [gozar.sgfparser :as parser]
+            [re-frame.core :as re-frame]))
 
 (def r 1.4)
-
-(defn dec' [l x] (if (<= x l) 0 (dec x)))
-(defn inc' [l x] (if (>= x l) x (inc x)))
 
 (defn distance [[a b] [c d]]
   (let [abs (fn [x] (if (< x 0) (* -1 x) x))]
     (+ (abs (- a c)) (abs (- b d)))))
+
+(defn get-move []
+  (if @(re-frame/subscribe [:analyze-mode])
+    @(re-frame/subscribe [:custom-move])
+    @(re-frame/subscribe [:move])))
+
+(defn get-moves []
+  (if @(re-frame/subscribe [:analyze-mode])
+    @(re-frame/subscribe [:custom-moves])
+    @(re-frame/subscribe [:moves])))
 
 (defn draw-line [x1 y1 x2 y2 f]
   [:line {:x1 (f x1) :y1 (f y1) :x2 (f x2) :y2 (f y2) :style {:stroke "rgb(0,0,0)"
@@ -32,7 +30,10 @@
        [[3 3] [15 15] [3 15] [15 3] [9 3] [3 9] [9 9] [9 15] [15 9]]))
 
 (defn draw-stones [f {:keys [stones turn]}]
-  (let [lm (:location (get @moves (dec @move)))]
+  (let [lm    (:location (get (get-moves) (dec (get-move))))
+        am    @(re-frame/subscribe [:analyze-mode])
+        moves @(re-frame/subscribe [:moves])
+        move  @(re-frame/subscribe [:move])]
     (map (fn [[[y x] t]]
            (case t
              :black [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "black"}]
@@ -41,10 +42,11 @@
              :white [:g [:circle.n {:cx (f x) :cy (f y) :r r :fill "white"}]
                      (when (= lm [y x])
                        [:circle {:cx (f x) :cy (f y) :r (/ r 2) :stroke "black" :stroke-width "0.17" :fill "none"}])]
-             :free  [:g {:on-click #(if (= (:location (get @moves @move)) [y x])
-                                      (do (swap! move inc)
-                                          (reset! attempt nil))
-                                      (reset! attempt [y x]))}
+             :free  [:g {:on-click #(cond
+                                      am                                     (do (re-frame/dispatch [:add-custom-move {:player turn :location [y x]}]))
+                                      (= (:location (get moves move)) [y x]) (do (re-frame/dispatch [:inc-move])
+                                                                                 (re-frame/dispatch [:set-attempt-to nil]))
+                                      :else                                  (re-frame/dispatch [:set-attempt-to [y x]]))}
                      (case (= turn :white)
                        true  [:circle.w {:cx (f x) :cy (f y) :r r}]
                        false [:circle.b {:cx (f x) :cy (f y) :r r}]
@@ -64,27 +66,11 @@
   [:svg {:width    "150%"
          :height   "150%"
          :view-box "0 0 100 100"}
-   [draw-board-base (u/apply-moves @board (subvec @moves 0 @move))
-                    #(+ (* % 3) 2)]]])
-
-(defn moves-range []
-  [:div.field {:style {:width "80%"}}
-   [:center
-    [:input {:type "range"
-             :min 0
-             :max (count @moves)
-             :value @move
-             :style {:width "90%"}
-             :on-change #(reset! move (js/parseInt (.-target.value %)))}]
-    [:span
-     (count @moves)]
-    [:div
-     [:a.button {:on-click #(swap! move (partial dec' 0))}
-      [:span.icon.is-small
-       [:i.fa.fa-arrow-left]]]
-     [:a.button {:on-click #(swap! move (partial inc' (count @moves)))}
-      [:span.icon.is-small
-       [:i.fa.fa-arrow-right]]]]]])
+   (let [board @(re-frame/subscribe [:board])
+         moves (get-moves)
+         move  (get-move)]
+     [draw-board-base (u/apply-moves board (subvec moves 0 move))
+                      #(+ (* % 3) 2)])]])
 
 (defn sgf-file-input []
   [:div.field
@@ -102,16 +88,15 @@
                                     nb   (u/create-board (:handicap game)
                                                          (:turn game)
                                                          (:komi game))]
-                                (reset! moves (vec (:moves game)))
-                                (reset! board nb)
-                                (reset! move 0)
-                                (reset! attempt nil)
-                                (swap! info (partial reduce conj)
+                                (re-frame/dispatch
+                                 [:change-of-file
+                                  nb
+                                  (vec (:moves game))
                                   {:result       (:result game)
                                    :player-black (:player-black game)
-                                   :player-white (:player-white game)})
-                                (reset! handicap (:handicap-n game))
-                                (reset! filename (.-name file))))) 
+                                   :player-white (:player-white game)}
+                                  (:handicap-n game)
+                                  (.-name file)])))) 
                       (.readAsText file-reader file)))}]
      [:span.file-cta
       [:span.file-icon
@@ -119,54 +104,88 @@
       [:span.file-label
        "Upload SGF..."]]
      [:span.file-name
-      @filename]]]])
+      @(re-frame/subscribe [:filename])]]]])
 
 (defn info-table []
-  [:table.table
-   [:thead
-    [:tr
-     [:th [:abbr "Move"]]
-     [:th [:abbr "Komi"]]
-     [:th [:abbr "Handicap"]]
-     [:th [:abbr "Black"]]
-     [:th [:abbr "White"]]
-     [:th [:abbr "Result"]]]]
-   [:tfoot
-    [:tr
-     [:th [:abbr @move]]
-     [:th [:abbr (:komi @board)]]
-     [:th [:abbr @handicap]]
-     [:th [:abbr (:player-black @info)]]
-     [:th [:abbr (:player-white @info)]]
-     [:th [:abbr (:result @info)]]]]])
+  (let [info @(re-frame/subscribe [:info])]
+    [:table.table
+     [:thead
+      [:tr
+       [:th [:abbr "Move"]]
+       [:th [:abbr "Komi"]]
+       [:th [:abbr "Handicap"]]
+       [:th [:abbr "Black"]]
+       [:th [:abbr "White"]]
+       [:th [:abbr "Result"]]]]
+     [:tfoot
+      [:tr
+       [:th [:abbr (get-move)]]
+       [:th [:abbr (:komi @(re-frame/subscribe [:board]))]]
+       [:th [:abbr @(re-frame/subscribe [:handicap])]]
+       [:th [:abbr (:player-black info)]]
+       [:th [:abbr (:player-white info)]]
+       [:th [:abbr (:result info)]]]]]))
+
+(defn moves-range []
+  [:div.field {:style {:width "80%"}}
+   [:center
+    [:input {:type "range"
+             :min 0
+             :max (count (get-moves))
+             :value (get-move)
+             :style {:width "90%"}
+             :on-change #(re-frame/dispatch [:change-move (js/parseInt (.-target.value %))])}]
+    [:span
+     (count (get-moves))]
+    [:div
+     [:a.button {:on-click #(do (re-frame/dispatch [:dec-move])
+                                (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small
+       [:i.fa.fa-arrow-left]]]
+     [:a.button {:on-click #(do (re-frame/dispatch [:inc-move])
+                                (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small
+       [:i.fa.fa-arrow-right]]]]]])
+
+(defn analyze-mode-checkbox []
+   [:button.button {:on-click #(re-frame/dispatch [:analyze-mode-change])}
+    (if @(re-frame/subscribe [:analyze-mode])
+      "Change to guess mode"
+      "Change to analyze mode")])
 
 (defn how-close-bar []
   [:div.field {:style {:margin-top "10px"}}
-   (let [nl (:location (get @moves @move))
-         n    (if (or (empty? @moves) (nil? @attempt))
-                100
-                (int (/ (* 100 (- 38 (distance @attempt nl)))
-                        38)))]
+   (let [moves   @(re-frame/subscribe [:moves])
+         attempt @(re-frame/subscribe [:attempt])
+         nl      (:location (get moves @(re-frame/subscribe [:move])))
+         n       (if (or (empty? moves) (nil? attempt))
+                   100
+                   (int (/ (* 100 (- 38 (distance attempt nl)))
+                           38)))]
      (cond 
        (> n 90)        [:progress.progress.is-success
                         {:style {:width "80%"} :min 0 :value n :max 100}]
        :else           [:progress.progress.is-danger
                         {:style {:width "80%"} :min 0 :value n :max 100}]))])
 
+(events/listen js/window "keydown"
+               (fn [e]
+                 (let [key-code (.-keyCode e)]
+                   (when (or (= key-code 37) (= key-code 39))
+                     (do (if (= 39 key-code)
+                           (re-frame/dispatch-sync [:inc-move])
+                           (re-frame/dispatch-sync [:dec-move]))
+                         (re-frame/dispatch [:set-attempt-to nil]))))))
+
 (defn main-panel []
-  (events/listen js/window "keydown"
-                 (fn [e]
-                   (let [key-code (.-keyCode e)]
-                     (when (#{37 39} key-code)
-                       (do (swap! move ({39 #(inc' (count @moves) %) 37 #(dec' 0 %)}
-                                        key-code))
-                           (reset! attempt nil))))))                       
   [:div {:style {:width "100%"}}
    [:div.columns {:style {:margin-left "10px"}}
     [:div.column.is-half
      [:center {:style {:margin "20px"}}
-      [:h.title.is-1 "GOzar"]]
-     [info-table]
+      [:h1.title.is-1 "GOzar"]
+      [info-table]]
+     [analyze-mode-checkbox]
+     (when-not @(re-frame/subscribe [:analyze-mode]))
      [how-close-bar]
      [moves-range]
      [:div {:style {:margin-top "20px"}}
