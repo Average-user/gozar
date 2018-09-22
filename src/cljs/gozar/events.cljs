@@ -70,7 +70,9 @@
        (assoc :info info)
        (assoc :handicap handicap)
        (assoc :filename filename)
-       (assoc :board-size board-size))))
+       (assoc :board-size board-size)
+       (assoc :attempt nil)
+       (assoc :move 0))))
 
 (re-frame/reg-event-db
  :set-attempt-to
