@@ -42,8 +42,10 @@
      :player-white (cs/trim (str (f "PW") " " (f "WR")))}))
 
 (defn board-size [xs]
-  (->> "SZ" (after xs) (re-seq #"\[(.*?)\]") first second #?(:clj read-string
-                                                             :cljs js/parseInt)))
+  (as-> (after xs "SZ") $
+    (if (empty? $)
+      19
+      (->> $ (re-seq #"\[(.*?)\]") first second #?(:clj read-string :cljs js/parseInt)))))
 
 (defn parse-move [str]
   (let [location (->> str

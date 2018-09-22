@@ -171,8 +171,7 @@
          nl      (:location (get moves @(re-frame/subscribe [:move])))
          n       (if (or (empty? moves) (nil? attempt))
                    100
-                   (int (/ (* 100 (- 38 (distance attempt nl)))
-                           38)))]
+                   (int (/ (* 100 (- 38 (distance attempt nl))) 38)))]
      (cond 
        (> n 90)        [:progress.progress.is-success
                         {:style {:width "80%"} :min 0 :value n :max 100}]
