@@ -1,16 +1,17 @@
 (ns gozar.util
   (:require [gozar.sgfparser :as parser]))
 
-(def stones (->> (for [x (range 19), y (range 19)] [[x y] :free])
-                 (into {})))
+(defn stones [size]
+  (->> (for [x (range size), y (range size)] [[x y] :free])
+       (into {})))
 
-(defn create-board [handicap-stones turn komi]
-  {:stones (reduce conj stones handicap-stones)
+(defn create-board [size handicap-stones turn komi]
+  {:stones (reduce conj (stones size) handicap-stones)
    :turn   turn
    :ko     {:white nil, :black nil}
    :komi   komi})
 
-(def initial-board (create-board [] :black 6.5))
+(defn initial-board [size] (create-board size [] :black 6.5))
 
 (def enemy {:white :black, :black :white})
 
@@ -96,25 +97,42 @@
 (defn place-stone [stones [x y] color]
   (when (= :free (get stones [x y]))
     (let [nstones (assoc stones [x y] color)
-          f (fn [stones c]
-              (let [inc (get stones c)]
+          f (fn [[stones taken] c]
+              (let [inc   (get stones c)
+                    group (group-of stones c)]
                 (if (and (= (enemy color) inc) (dead-group? stones c))
-                 (remove-group stones c)
-                 stones)))]
-      (reduce f nstones (neighbors #{(enemy color)} stones [x y])))))
+                 [(remove-group stones c) (reduce conj taken group)]
+                 [stones taken])))]
+      (as-> (reduce f [nstones #{}] (neighbors #{(enemy color)} stones [x y]))
+            [stones' taken]
+        (if (= 1 (count taken))
+          [stones' [color [x y] (first taken)]]
+          [stones' nil])))))
 
-(defn valid-move? [stones [x y] color]
-  (when-let [nstones (place-stone stones [x y] color)]
-    (not (dead-group? nstones [x y]))))
+(defn valid-move? [{:keys [stones ko turn]} {:keys [player location]}]
+  (when-let [[nstones taken] (place-stone stones location turn)]
+    (and (= turn player)
+         (not (dead-group? nstones location))
+         (not (and taken (= (get taken 2) ((enemy turn) ko)))))))
+       
+(defn child-board [{:keys [stones turn ko komi] :as board} {:keys [player location] :as move}]
+  (cond
+    (and (= turn player) (= :pass location)) (-> board
+                                                 (update :turn enemy)
+                                                 (assoc-in [:ko (enemy turn)] nil))
+    (not (valid-move? board move))           board
+    :else
+    (let [[nstones taken] (place-stone stones location player)]
+      (if (nil? taken)
+          {:stones nstones
+           :turn   (enemy player)
+           :ko     (assoc ko (enemy turn) nil)
+           :komi   komi}
+          {:stones nstones
+           :turn   (enemy player)
+           :ko     (-> ko (assoc (enemy turn) nil) (assoc (first taken) (second taken)))
+           :komi   komi}))))
 
-(defn child-board [{:keys [stones turn] :as board} {:keys [player location]}]
-  (if (or (not (valid-move? stones location player)) (not= player turn))
-    board
-    {:stones (place-stone stones location player)
-     :turn   (enemy player)
-     :ko     (get board :ko)
-     :komi   (get board :komi)}))
-                      
 (defn take-until
   "Returns every element before the first element that returns true for pred,
    including the element itself. (take-until odd? '(2 4 6 8 9 10 12 14)) => '(2 4 6 8 9)"
@@ -127,10 +145,3 @@
 
 (defn apply-moves [board moves]
   (reduce child-board board moves))
-
-(defn simulate-game [file-string]
-  (let [[handicap turn moves] (parser/parse-game file-string)]
-    (->> [(create-board handicap turn 5.5) moves]
-         (iterate (fn [[b [m & ms]]] [(child-board b m) ms]))
-         (take-until (comp nil? first second))
-         (map first))))

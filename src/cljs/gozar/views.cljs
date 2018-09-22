@@ -25,9 +25,16 @@
   [:line {:x1 (f x1) :y1 (f y1) :x2 (f x2) :y2 (f y2) :style {:stroke "rgb(0,0,0)"
                                                               :stroke-width 0.07}}])
 
-(defn draw-dots [f]
+(defn draw-dots [f size]
   (map (fn [[x y]] [:circle {:cx (f x) :cy (f y) :r 0.2 :fill "black"}])
-       [[3 3] [15 15] [3 15] [15 3] [9 3] [3 9] [9 9] [9 15] [15 9]]))
+       (case size
+         19 [[3 3] [15 15] [3 15] [15 3] [9 3] [3 9] [9 9] [9 15] [15 9]]
+         13 [[3 3] [9 3] [3 9] [9 9] [6 6]]
+         9  [[2 2] [6 2] [2 6] [6 6] [4 4]]
+         [])))
+
+(defn board-size [size] (str (+ 4 (* 3 (dec size))) "%"))
+(def amplification {19 "140%" 13 "200%" 9 "250%"})
 
 (defn draw-stones [f {:keys [stones turn]}]
   (let [lm    (:location (get (get-moves) (dec (get-move))))
@@ -53,24 +60,26 @@
                        [:circle {:cx (f x) :cy (f y) :r r :fill "rgba(0,0,0,0)"}])]))
          stones)))
 
-(defn draw-board-base [{:keys [stones] :as board} amplifier]
-  (into [:g [:rect {:x 0 :y 0 :width "58%" :height "58%" :fill "rgb(219,176,98)"}]]
-        (concat (draw-dots amplifier)
+(defn draw-board-base [{:keys [stones] :as board} amplifier size]
+  (into [:g [:rect {:x 0 :y 0 :width (board-size size) :height (board-size size) :fill "rgb(219,176,98)"}]]
+        (concat (draw-dots amplifier size)
                 (mapv (fn [[x1 y1 x2 y2]] (draw-line x1 y1 x2 y2 amplifier))
-                      (concat (map vector (range 19) (repeat 0) (range 19) (repeat 18))
-                              (map vector (repeat 0) (range 19) (repeat 18) (range 19))))
+                      (concat (map vector (range size) (repeat 0) (range size) (repeat (dec size)))
+                              (map vector (repeat 0) (range size) (repeat (dec size)) (range size))))
                 (draw-stones amplifier board))))
 
 (defn board-svg []
- [:div.field {:style {:margin-top "20px"}}
-  [:svg {:width    "150%"
-         :height   "150%"
-         :view-box "0 0 100 100"}
-   (let [board @(re-frame/subscribe [:board])
-         moves (get-moves)
-         move  (get-move)]
-     [draw-board-base (u/apply-moves board (subvec moves 0 move))
-                      #(+ (* % 3) 2)])]])
+  (let [size @(re-frame/subscribe [:board-size])]
+    [:div.field {:style {:margin-top "20px"}}
+     [:svg {:width    (amplification size)
+            :height   (amplification size)
+            :view-box "0 0 100 100"}
+      (let [board @(re-frame/subscribe [:board])
+            moves (get-moves)
+            move  (get-move)]
+        [draw-board-base (u/apply-moves board (subvec moves 0 move))
+         #(+ (* % 3) 2)
+         size])]]))
 
 (defn sgf-file-input []
   [:div.field
@@ -85,7 +94,8 @@
                       (set! (.-onload file-reader)
                             (fn [e']
                               (let [game (parser/parse-game (-> e' .-target .-result))
-                                    nb   (u/create-board (:handicap game)
+                                    nb   (u/create-board (:board-size game)
+                                                         (:handicap game)
                                                          (:turn game)
                                                          (:komi game))]
                                 (re-frame/dispatch
@@ -96,7 +106,8 @@
                                    :player-black (:player-black game)
                                    :player-white (:player-white game)}
                                   (:handicap-n game)
-                                  (.-name file)])))) 
+                                  (.-name file)
+                                  (:board-size game)])))) 
                       (.readAsText file-reader file)))}]
      [:span.file-cta
       [:span.file-icon
@@ -185,8 +196,8 @@
       [:h1.title.is-1 "GOzar"]
       [info-table]]
      [analyze-mode-checkbox]
-     (when-not @(re-frame/subscribe [:analyze-mode]))
-     [how-close-bar]
+     (when-not @(re-frame/subscribe [:analyze-mode])
+       [how-close-bar])
      [moves-range]
      [:div {:style {:margin-top "20px"}}
       [sgf-file-input]]

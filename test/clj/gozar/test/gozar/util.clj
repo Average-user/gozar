@@ -70,16 +70,17 @@
 
 (deftest place-stone-eating
   (is (= (u/place-stone example3 [4 4] :black)
-         (-> ["........."
-              "...OOOO.."
-              ".OOO..O.."
-              ".XXO...O."
-              ".OXXO.OO."
-              ".OOO.OOO."
-              "...OOO..."
-              "........."
-              "........."]
-             grid->stones))))
+         [(-> ["........."
+               "...OOOO.."
+               ".OOO..O.."
+               ".XXO...O."
+               ".OXXO.OO."
+               ".OOO.OOO."
+               "...OOO..."
+               "........."
+               "........."]
+              grid->stones)
+          nil])))
 
 (deftest valid-moves
   (is (u/place-stone example3 [4 4] :black))        ;Is not suicide if eats

@@ -9,6 +9,7 @@
                  :board        u/initial-board
                  :handicap     "0"
                  :attempt      nil
+                 :board-size   19
                  :info         {:result       "-"
                                 :player-black "-"
                                 :player-white "-"}

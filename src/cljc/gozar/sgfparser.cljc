@@ -1,8 +1,10 @@
 (ns gozar.sgfparser
   (:require [clojure.string :as cs]))
 
+(def coord-chars (set "abcdefghijklmnopqrs"))
+
 (defn char->int [c]
-  (.indexOf (vec "abcdefghijklmnopqrstuvwxyz") c))
+  (.indexOf (vec "abcdefghijklmnopqrs") c))
 
 (defn after [text str]
   (->> [text false]
@@ -13,8 +15,9 @@
        (ffirst)))
 
 (defn get-handicap [xs]
-  (letfn [(f [x] (->>
-                   (take-while (partial not= \;) x)
+  (letfn [(f [x] (->> x
+                   (drop 2)
+                   (take-while (reduce conj coord-chars "[]"))
                    (apply str)
                    (re-seq #"\[(.*?)\]")
                    (map (comp (fn [c] [c :black]) (partial mapv char->int) second))))]
@@ -35,28 +38,36 @@
 
 (defn player-names-and-ranks [xs]
   (let [f #(->> % (after xs) (re-seq #"\[(.*?)\]") first second)]
-    {:player-black (str (f "PB") " " (f "BR"))
-     :player-white (str (f "PW") " " (f "WR"))}))
+    {:player-black (cs/trim (str (f "PB") " " (f "BR")))
+     :player-white (cs/trim (str (f "PW") " " (f "WR")))}))
 
-(defn parse-line [line]
-  (letfn [(coords [x]
-            (->> (re-seq #"\[(.*?)\]" x) first second reverse (mapv char->int)))]
-    (case (first line)
-      \W {:player :white :location (coords line)}
-      \B {:player :black :location (coords line)})))
+(defn board-size [xs]
+  (->> "SZ" (after xs) (re-seq #"\[(.*?)\]") first second #?(:clj read-string
+                                                             :cljs js/parseInt)))
+
+(defn parse-move [str]
+  (let [location (->> str
+                   (re-seq #"\[(.*?)\]")
+                   ((comp reverse second first))
+                   (mapv char->int)
+                   (#(if (empty? %) :pass %)))]
+    (case (first str)
+      \W {:player :white :location location}
+      \B {:player :black :location location})))
 
 (defn parse-game [file-string]
   (let [rem   #{\space \newline}
         moves (->> (cs/split (cs/join (remove rem file-string)) #";")
                    (filter #(#{\W \B} (first %)))
-                   (mapv parse-line))]
+                   (mapv parse-move))]
     (reduce conj
-      {:handicap (get-handicap file-string)
-       :turn  (:player (first moves))
-       :moves moves
-       :komi  (get-komi file-string)
-       :result (get-result file-string)
-       :handicap-n (get-handicap-n file-string)}
+      {:handicap   (get-handicap file-string)
+       :turn       (:player (first moves))
+       :moves      moves
+       :komi       (get-komi file-string)
+       :result     (get-result file-string)
+       :handicap-n (get-handicap-n file-string)
+       :board-size (board-size file-string)}
       (player-names-and-ranks file-string))))
 
 (defn distance [[a b] [c d]]

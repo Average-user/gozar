@@ -1,6 +1,7 @@
 (ns gozar.events
   (:require [re-frame.core :as re-frame]
-            [gozar.db :as db]))
+            [gozar.db :as db]
+            [gozar.util :as u]))
 
 (re-frame/reg-event-db
  :initialize-db
@@ -21,11 +22,20 @@
          (assoc :analyze-mode true)))))
 
 (re-frame/reg-event-db
+ :set-board-size-to
+ (fn [db [_ size]]
+   (assoc db :board-size size)))
+
+(re-frame/reg-event-db
  :add-custom-move
  (fn [db [_ move]]
-   (-> db
-       (update :custom-moves #(conj (subvec % 0 (:custom-move db)) move))
-       (update :custom-move inc))))
+   (if (u/valid-move? (u/apply-moves (:board db) (take (:custom-move db)
+                                                       (:custom-moves db)))
+                      move)
+     (-> db
+         (update :custom-moves #(conj (subvec % 0 (:custom-move db)) move))
+         (update :custom-move inc))
+     db)))
 
 (re-frame/reg-event-db
  :change-move
@@ -53,13 +63,14 @@
    
 (re-frame/reg-event-db
  :change-of-file
- (fn [db [_ board moves info handicap filename]]
+ (fn [db [_ board moves info handicap filename board-size]]
    (-> db/default-db
        (assoc :board board)
        (assoc :moves moves)
        (assoc :info info)
        (assoc :handicap handicap)
-       (assoc :filename filename))))
+       (assoc :filename filename)
+       (assoc :board-size board-size))))
 
 (re-frame/reg-event-db
  :set-attempt-to

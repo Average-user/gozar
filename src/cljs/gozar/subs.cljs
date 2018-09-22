@@ -52,3 +52,8 @@
  :filename
  (fn [db]
    (:filename db)))
+
+(re-frame/reg-sub
+ :board-size
+ (fn [db]
+   (:board-size db)))
