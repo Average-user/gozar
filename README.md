@@ -10,12 +10,11 @@ The name comes from the spanish word "gozar" which means "enjoy".
 
 ### How it works?
 
-The user must select a `.sgf` file from its computer and proceed to the board.
-At this moment the user will face the choice to either click the button `Show next move`
-and leave the work to the computer, or give it a try and guess where was
-the stone played in the game. A bar will be shown to indicate how close
-(Taxicab distance) from the actual move was. If the move is correct, the stone
-will be placed, otherwise you'll need to try again, or give up and click
-`Show next move`.
+The first step is to upload an `.sgf` (Smart Go Format). After that, the user
+should try to guess where the stone was played in the loaded game. A bar will be
+shown indicating how close (Taxicab distance) to the actual move the guess was,
+this bar will turn green when the guess is really close (10% off, or better).
+If the guess happens to be the correct move, then the stone will be placed
+in the board. The user has also the option to skip a move and try the next one.
 
 ![](https://github.com/Average-user/gozar/blob/master/resources/public/img/demo.png?raw=true)
