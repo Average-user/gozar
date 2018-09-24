@@ -34,7 +34,7 @@
          [])))
 
 (defn board-size [size] (str (+ 4 (* 3 (dec size))) "%"))
-(def amplification {19 "140%" 13 "200%" 9 "250%"})
+(def amplification {19 "140%" 13 "190%" 9 "240%"})
 
 (defn draw-stones [f {:keys [stones turn]}]
   (let [lm    (:location (get (get-moves) (dec (get-move))))
@@ -51,7 +51,7 @@
                        [:circle {:cx (f x) :cy (f y) :r (/ r 2) :stroke "black" :stroke-width "0.17" :fill "none"}])]
              :free  [:g {:on-click #(cond
                                       am                                     (do (re-frame/dispatch [:add-custom-move {:player turn :location [y x]}]))
-                                      (= (:location (get moves move)) [y x]) (do (re-frame/dispatch [:inc-move])
+                                      (= (:location (get moves move)) [y x]) (do (re-frame/dispatch [:inc-move 1])
                                                                                  (re-frame/dispatch [:set-attempt-to nil]))
                                       :else                                  (re-frame/dispatch [:set-attempt-to [y x]]))}
                      (case (= turn :white)
@@ -119,7 +119,7 @@
 
 (defn info-table []
   (let [info @(re-frame/subscribe [:info])]
-    [:table.table
+    [:table.table.is-fullwidth
      [:thead
       [:tr
        [:th [:abbr "Move"]]
@@ -138,53 +138,67 @@
        [:th [:abbr (:result info)]]]]]))
 
 (defn moves-range []
-  [:div.field {:style {:width "80%"}}
+  [:div.field {:style {:width "100%"}}
    [:center
     [:input {:type "range"
              :min 0
              :max (count (get-moves))
              :value (get-move)
-             :style {:width "90%"}
+             :style {:width "85%"}
              :on-change #(re-frame/dispatch [:change-move (js/parseInt (.-target.value %))])}]
     [:span
      (count (get-moves))]
     [:div
-     [:a.button {:on-click #(do (re-frame/dispatch [:dec-move])
-                                (re-frame/dispatch [:set-attempt-to nil]))}
-      [:span.icon.is-small
-       [:i.fa.fa-arrow-left]]]
-     [:a.button {:on-click #(do (re-frame/dispatch [:inc-move])
-                                (re-frame/dispatch [:set-attempt-to nil]))}
-      [:span.icon.is-small
-       [:i.fa.fa-arrow-right]]]]]])
+     [:a.button.is-white {:on-click #(do (re-frame/dispatch [:dec-move 10])
+                                         (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small [:i.fa.fa-angle-double-left]]]
+     [:a.button.is-white {:on-click #(do (re-frame/dispatch [:dec-move 1])
+                                         (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small [:i.fa.fa-angle-left]]]
+     [:a.button.is-white {:on-click #(do (re-frame/dispatch [:inc-move 1])
+                                         (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small [:i.fa.fa-angle-right]]]
+     [:a.button.is-white {:on-click #(do (re-frame/dispatch [:inc-move 10])
+                                         (re-frame/dispatch [:set-attempt-to nil]))}
+      [:span.icon.is-small [:i.fa.fa-angle-double-right]]]]]])
 
 (defn analyze-mode-checkbox []
-   [:button.button {:on-click #(re-frame/dispatch [:analyze-mode-change])}
+  [:a.button {:on-click #(re-frame/dispatch [:analyze-mode-change])}
+   [:span.icon.is-small (if @(re-frame/subscribe [:analyze-mode])
+                          [:i.fa.fa-lightbulb]
+                          [:i.fa.fa-code-branch])]
+                          
+   [:span
     (if @(re-frame/subscribe [:analyze-mode])
       "Change to guess mode"
-      "Change to analyze mode")])
+      "Change to analyze mode")]])
 
 (defn how-close-bar []
   [:div.field {:style {:margin-top "10px"}}
    (let [moves   @(re-frame/subscribe [:moves])
          attempt @(re-frame/subscribe [:attempt])
          nl      (:location (get moves @(re-frame/subscribe [:move])))
+         faraway (->> @(re-frame/subscribe [:board])
+                      :stones
+                      keys
+                      (map #(distance % nl))
+                      (reduce max))
          n       (if (or (empty? moves) (nil? attempt))
                    100
-                   (int (/ (* 100 (- 38 (distance attempt nl))) 38)))]
+                   (/ (* 100 (- faraway (distance attempt nl))) faraway))]
      (cond 
-       (> n 90)        [:progress.progress.is-success
-                        {:style {:width "80%"} :min 0 :value n :max 100}]
+       (> n 80)        [:progress.progress.is-success
+                        {:style {:width "100%"} :min 0 :value n :max 100}]
        :else           [:progress.progress.is-danger
-                        {:style {:width "80%"} :min 0 :value n :max 100}]))])
+                        {:style {:width "100%"} :min 0 :value n :max 100}]))])
 
 (events/listen js/window "keydown"
                (fn [e]
                  (let [key-code (.-keyCode e)]
                    (when (or (= key-code 37) (= key-code 39))
                      (do (if (= 39 key-code)
-                           (re-frame/dispatch-sync [:inc-move])
-                           (re-frame/dispatch-sync [:dec-move]))
+                           (re-frame/dispatch-sync [:inc-move 1])
+                           (re-frame/dispatch-sync [:dec-move 1]))
                          (re-frame/dispatch [:set-attempt-to nil]))))))
 
 (defn main-panel []
@@ -201,7 +215,8 @@
      [:div {:style {:margin-top "20px"}}
       [sgf-file-input]]
      [:center {:style {:margin-top "20px"}}
-      [:a.icon {:href "https://github.com/Average-user/gozar#readme"
-                :style {:content "url(img/github.png)" :width "32" :height "32"}}]]]
+      [:a.button.is-large.is-white
+       {:href "https://github.com/Average-user/gozar#readme"}
+       [:span.icon.is-medium [:i.fab.fa-github]]]]]              
     [:div.column
      [board-svg]]]])

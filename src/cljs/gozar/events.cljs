@@ -46,20 +46,20 @@
 
 (re-frame/reg-event-db
  :dec-move
- (fn [db _]
+ (fn [db [_ n]]
    (let [move (if (:analyze-mode db) :custom-move :move)]
-     (if (<= (get db move) 0)
+     (if (<= (- (get db move) n) 0)
        (assoc db move 0)
-       (update db move dec)))))
+       (update db move #(- % n))))))
 
 (re-frame/reg-event-db
  :inc-move
- (fn [db _]
+ (fn [db [_ n]]
    (let [move         (if (:analyze-mode db) :custom-move :move)
          moves-length (count ((if (:analyze-mode db) :custom-moves :moves) db))]
-     (if (>= (get db move) moves-length)
+     (if (>= (+ n (get db move)) moves-length)
        (assoc db move moves-length)
-       (update db move inc)))))
+       (update db move #(+ % n))))))
    
 (re-frame/reg-event-db
  :change-of-file
