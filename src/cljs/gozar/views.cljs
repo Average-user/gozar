@@ -107,7 +107,7 @@
                                    :player-white (:player-white game)}
                                   (:handicap-n game)
                                   (.-name file)
-                                  (:board-size game)])))) 
+                                  (:board-size game)]))))
                       (.readAsText file-reader file)))}]
      [:span.file-cta
       [:span.file-icon
@@ -167,7 +167,6 @@
    [:span.icon.is-small (if @(re-frame/subscribe [:analyze-mode])
                           [:i.fa.fa-lightbulb]
                           [:i.fa.fa-code-branch])]
-                          
    [:span
     (if @(re-frame/subscribe [:analyze-mode])
       "Change to guess mode"
@@ -186,7 +185,7 @@
          n       (if (or (empty? moves) (nil? attempt))
                    100
                    (/ (* 100 (- faraway (distance attempt nl))) faraway))]
-     (cond 
+     (cond
        (> n 80)        [:progress.progress.is-success
                         {:style {:width "100%"} :min 0 :value n :max 100}]
        :else           [:progress.progress.is-danger
@@ -210,13 +209,18 @@
       [info-table]]
      [analyze-mode-checkbox]
      (when-not @(re-frame/subscribe [:analyze-mode])
-       [how-close-bar])
+       (if (= :pass (:location (get (get-moves) (get-move))))
+         [:div.field {:style {:margin-top "10px"}}
+          [:a.button.is-success.is-outlined.is-rounded
+           {:on-click #(re-frame/dispatch [:inc-move 1])}
+           [:span "Pass"]]]
+         [how-close-bar]))
      [moves-range]
      [:div {:style {:margin-top "20px"}}
       [sgf-file-input]]
      [:center {:style {:margin-top "20px"}}
       [:a.button.is-large.is-white
        {:href "https://github.com/Average-user/gozar#readme"}
-       [:span.icon.is-medium [:i.fab.fa-github]]]]]              
+       [:span.icon.is-medium [:i.fab.fa-github]]]]]
     [:div.column
      [board-svg]]]])

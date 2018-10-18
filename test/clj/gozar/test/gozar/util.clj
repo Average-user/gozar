@@ -1,6 +1,7 @@
 (ns gozar.test.gozar.util
   (:require [clojure.test :refer [deftest testing is]]
-            [gozar.util :as u]))
+            [gozar.util :as u]
+            [gozar.sgfparser :as s]))
 
 
 (defn grid->stones [grid]
@@ -51,6 +52,21 @@
        "........."]
       grid->stones))
 
+(def example4
+  {:stones (-> ["........."
+                "........."
+                "........."
+                "...XX...."
+                "...X.X..."
+                "...OXOO.."
+                "....OO..."
+                "........."
+                "........."]
+               grid->stones)
+   :komi   6.5
+   :turn   :black
+   :ko     {:white nil :black nil}})  
+
 (deftest white-groups
   (is (= #{[1 1] [1 2] [1 3] [1 4] [1 5] [2 3] [2 5] [3 3] [3 4] [3 5]}
          (u/group-of example1 [1 1])))
@@ -87,3 +103,27 @@
   (is (u/place-stone example3 [4 4] :white))        ;White breaths by [3 0]
   (is (not (u/place-stone example1 [0 0] :white)))  ;can't play on top of other white stone
   (is (not (u/place-stone example1 [2 1] :white)))) ;can't play on top of black stone
+
+(deftest ko-related
+  (is (= (:ko (u/child-board example4 {:player :black :location [4 4]}))
+         {:white nil :black [4 4]}))
+  (is (= (:stones (u/apply-moves example4 [{:player :black :location [4 4]}
+                                           {:player :white :location [5 5]}]))
+         (:stones (u/apply-moves example4 [{:player :black :location [4 4]}]))))
+  (is (= (:stones (u/apply-moves example4 [{:player :black :location [4 4]}
+                                           {:player :white :location [3 5]}
+                                           {:player :black :location [6 3]}
+                                           {:player :white :location [5 4]}
+                                           {:player :black :location [4 6]}
+                                           {:player :white :location :pass}
+                                           {:player :black :location [4 4]}]))
+         (-> ["........."
+              "........."
+              "........."
+              "...XXX..."
+              "...XOXO.."
+              "...O.OO.."
+              "...OOO..."
+              "........."
+              "........."]
+             grid->stones))))

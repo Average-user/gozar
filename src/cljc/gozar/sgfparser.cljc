@@ -47,21 +47,26 @@
       19
       (->> $ (re-seq #"\[(.*?)\]") first second #?(:clj read-string :cljs js/parseInt)))))
 
-(defn parse-move [str]
-  (let [location (->> str
-                   (re-seq #"\[(.*?)\]")
-                   ((comp reverse second first))
-                   (mapv char->int)
-                   (#(if (empty? %) :pass %)))]
-    (case (first str)
-      \W {:player :white :location location}
-      \B {:player :black :location location})))
+(defn parse-moves [xs]
+  (let [beg      {:black ";B[" :white ";W["}
+        enemy    {:white :black :black :white}
+        start    (second (sort-by (comp count (partial after xs) beg)
+                                  [:white :black]))
+        location (fn [s] (->> s
+                           (re-seq #"\[(.*?)\]")
+                           ((comp reverse second first))
+                           (mapv char->int)
+                           (#(if (empty? %) :pass %))))]
+    (loop [xs xs, turn start, moves []]
+      (as-> (after xs (beg turn)) $
+        (if (empty? $)
+          moves
+          (recur (cs/join (rest $)) (enemy turn)
+                 (conj moves {:player turn :location (location $)})))))))
 
 (defn parse-game [file-string]
-  (let [rem   #{\space \newline}
-        moves (->> (cs/split (cs/join (remove rem file-string)) #";")
-                   (filter #(#{\W \B} (first %)))
-                   (mapv parse-move))]
+  (let [rem   #{\space \newline \tab}
+        moves (parse-moves file-string)]
     (reduce conj
       {:handicap   (get-handicap file-string)
        :turn       (:player (first moves))
