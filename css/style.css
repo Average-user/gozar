@@ -1,29 +1,95 @@
 circle.b {
-    fill: rgba(0,0,0,0);
-}
+  fill: transparent; }
 
 circle.w {
-    fill: rgba(150,0,0,0);
-}
+  fill: rgba(150, 0, 0, 0); }
 
 circle.w:hover {
-    fill: rgba(255,255,255,0.5);
-    stroke: black;
-    stroke-width: 0.11;
-}
+  fill: rgba(255, 255, 255, 0.5);
+  stroke: black;
+  stroke-width: 0.04; }
+
 circle.b:hover {
-    fill: rgba(0,0,0,0.5);
-    stroke: black;
-    stroke-width: 0.11;
-}
+  fill: rgba(0, 0, 0, 0.5);
+  stroke: black;
+  stroke-width: 0.04; }
 
 circle.n {
-    stroke: black;
-    stroke-width: 0.11;
-}
+  stroke: black;
+  stroke-width: 0.04; }
 
 .info {
-    padding: 4px;
-    border: 1px black solid;
-    border-right: 0px;
-}
+  padding: 4px;
+  border: 1px black solid;
+  border-right: 0px; }
+
+div.left {
+  margin-left: 1em;
+  width: 47%;
+  float: left; }
+
+div.right {
+  width: 47%;
+  float: right; }
+
+.icon {
+  margin: 5px; }
+
+.boxed {
+  border: 1px solid #cccccc;
+  border-radius: 3px;
+  padding: 0.5em;
+  cursor: pointer;
+  display: inline-block;
+  color: #373737; }
+
+.boxed:hover {
+  border: 1px solid #aaaaaa; }
+
+.button-icon {
+  color: #373737;
+  font-size: 1.15em; }
+
+.button-icon:hover {
+  color: black;
+  cursor: pointer; }
+
+table {
+  border-collapse: collapse;
+  width: 100%; }
+
+th {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd; }
+
+.element {
+  margin-top: 2em; }
+
+input[type="file"] {
+  display: none; }
+
+body {
+  font-family: "Trebuchet MS", Helvetica, sans-serif;
+  font-size: 1em; }
+
+h1 {
+  font-size: 3em;
+  color: #373737; }
+
+abbr {
+  color: #373737; }
+
+github {
+  color: black; }
+
+p {
+  color: #373737; }
+
+a.pass {
+  width: 97%;
+  text-align: center;
+  font-size: 0.9em;
+  padding: 0.1em;
+  border-radius: 10px;
+  background-color: #c8c8c8; }
