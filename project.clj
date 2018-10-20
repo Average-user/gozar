@@ -10,6 +10,7 @@
   :source-paths ["src/clj" "src/cljc"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
+                                    "resources/public/css"
                                     "target"]
 
   ;; PROFILES
@@ -27,6 +28,11 @@
   :test-paths ["test/clj"]
 
   :css-dirs ["resources/public/css"]
+
+  ;; RESOURCES
+  :sassc [{:src       "resources/sass/style.sass"
+           :output-to "resources/public/css/style.css"}]
+           ;:style     "compressed"}]
   
   ;; BUILDS
   :cljsbuild {:builds [{:id           "dev"
