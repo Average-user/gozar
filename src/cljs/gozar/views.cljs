@@ -167,7 +167,7 @@
 (defn svg-progress-bar [min value color]
   [:div.element
    [:svg {:width    "100%"
-          :height   "1.05em"}
+          :height   "1.1em"}
     [:g
      [:rect {:width "98%" :height "100%" :fill "rgb(200,200,200)" :rx "10" :ry "10"}]
      [:rect {:width (str (- value 2) "%") :height "100%" :fill color :rx "10" :ry "10"}]]]])
