@@ -73,10 +73,11 @@
 (defn valid-move?
   "Given a board and a move, returns true if its a valid move or not"
   [{:keys [stones ko turn]} {:keys [player location]}]
-  (when-let [[nstones taken] (place-stone stones location turn)]
-    (and (= turn player)
-         (not (dead-group? nstones location))
-         (not (and taken (= (second taken) ((enemy turn) ko)))))))
+  (or (and (= player turn) (= location :pass))
+      (when-let [[nstones taken] (place-stone stones location turn)]
+        (and (= turn player)
+             (not (dead-group? nstones location))
+             (not (and taken (= (second taken) ((enemy turn) ko))))))))
        
 (defn child-board
   "Given a board and a move, returns a new board with that move applied. If the move

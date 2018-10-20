@@ -213,13 +213,19 @@
       [:h1 "GOzar"]
       [info-table]]
      [analyze-mode-checkbox]
-     (when-not @(re-frame/subscribe [:analyze-mode])
+     (if-not @(re-frame/subscribe [:analyze-mode])
        (if (= :pass (:location (get (get-moves) (get-move))))
          [:div.element
           [:a.boxed.pass
-            {:on-click #(re-frame/dispatch [:inc-move 1])}
+           {:on-click #(re-frame/dispatch [:inc-move 1])}
            [:span "Pass"]]]
-         [how-close-bar]))
+         [how-close-bar])
+       (let [turn (u/enemy (:player (get @(re-frame/subscribe [:custom-moves])
+                                         (dec @(re-frame/subscribe [:custom-move])))))]
+        [:div.element
+         [:a.boxed.pass
+          {:on-click #(re-frame/dispatch [:add-custom-move {:player turn :location :pass}])} 
+          [:span "Pass"]]]))
      [moves-range]
      [:div.element
       [sgf-file-input]]
