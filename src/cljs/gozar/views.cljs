@@ -62,7 +62,15 @@
                 (mapv (fn [[x1 y1 x2 y2]] (draw-line (inc x1) (inc y1) (inc x2) (inc y2)))
                       (concat (map vector (range size) (repeat 0) (range size) (repeat (dec size)))
                               (map vector (repeat 0) (range size) (repeat (dec size)) (range size))))
-                (draw-stones board))))
+                (draw-stones board)
+                (map (fn [[x l]] [:text.coordinate {:x x :y 0.7} (str l)])
+                     (map (fn [a b] [(- a 0.2) b]) (range 1 (inc size)) "ABCDEFGHJKLMNOPQRST"))
+                (map (fn [[x l]] [:text.coordinate {:x x :y (+ size 0.7)} (str l)])
+                     (map (fn [a b] [(- a 0.2) b]) (range 1 (inc size)) "ABCDEFGHJKLMNOPQRST"))
+                (map (fn [[y l]] [:text.coordinate {:x 0.2 :y y} (str l)])
+                     (map (fn [a b] [(+ a 0.2) b]) (range 1 (inc size)) (range size 0 -1)))
+                (map (fn [[y l]] [:text.coordinate {:x (+ size 0.2) :y y} (str l)])
+                     (map (fn [a b] [(+ a 0.2) b]) (range 1 (inc size)) (range size 0 -1)))))) 
 
 (defn board-svg []
   (let [size @(re-frame/subscribe [:board-size])]

@@ -93,3 +93,6 @@ a.pass {
   padding: 0.1em;
   border-radius: 10px;
   background-color: #c8c8c8; }
+
+.coordinate {
+  font: bold 0.028em sans-serif; }
