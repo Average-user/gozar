@@ -41,18 +41,18 @@
            (case t
              :black [:g [:circle.n {:cx (inc x) :cy (inc y) :r r :fill "black"}]
                      (when (= lm [y x])
-                       [:circle {:cx (inc x) :cy (inc y) :r (/ r 2) :stroke "white" :stroke-width "0.1" :fill "none"}])]
+                       [:circle {:cx (inc x) :cy (inc y) :r (/ r 2) :stroke "white" :stroke-width "0.08" :fill "none"}])]
              :white [:g [:circle.n {:cx (inc x) :cy (inc y) :r r :fill "white"}]
                      (when (= lm [y x])
-                       [:circle {:cx (inc x) :cy (inc y) :r (/ r 2) :stroke "black" :stroke-width "0.1" :fill "none"}])]
+                       [:circle {:cx (inc x) :cy (inc y) :r (/ r 2) :stroke "black" :stroke-width "0.08" :fill "none"}])]
              :free  [:g {:on-click #(cond
                                       am                                     (re-frame/dispatch [:add-custom-move {:player turn :location [y x]}])
                                       (= (:location (get moves move)) [y x]) (do (re-frame/dispatch [:inc-move 1])
                                                                                  (re-frame/dispatch [:set-attempt-to nil]))
                                       :else                                  (re-frame/dispatch [:set-attempt-to [y x]]))}
                      (case (= turn :white)
-                       true  [:circle.w {:cx (inc x) :cy (inc y) :r 0.5}]
-                       false [:circle.b {:cx (inc x) :cy (inc y) :r 0.5}]
+                       true  [:circle.w {:cx (inc x) :cy (inc y) :r r}]
+                       false [:circle.b {:cx (inc x) :cy (inc y) :r r}]
                        [:circle {:cx (inc x) :cy (inc y) :r r :fill "rgba(0,0,0,0)"}])]))
          stones)))
 
@@ -63,13 +63,13 @@
                       (concat (map vector (range size) (repeat 0) (range size) (repeat (dec size)))
                               (map vector (repeat 0) (range size) (repeat (dec size)) (range size))))
                 (draw-stones board)
-                (map (fn [[x l]] [:text.coordinate {:x x :y 0.7} (str l)])
+                (map (fn [[x l]] [:text.coordinate {:x x :y 0.4} (str l)])
                      (map (fn [a b] [(- a 0.2) b]) (range 1 (inc size)) "ABCDEFGHJKLMNOPQRST"))
-                (map (fn [[x l]] [:text.coordinate {:x x :y (+ size 0.7)} (str l)])
+                (map (fn [[x l]] [:text.coordinate {:x x :y (+ size 0.9)} (str l)])
                      (map (fn [a b] [(- a 0.2) b]) (range 1 (inc size)) "ABCDEFGHJKLMNOPQRST"))
-                (map (fn [[y l]] [:text.coordinate {:x 0.2 :y y} (str l)])
+                (map (fn [[y l]] [:text.coordinate {:x 0.04 :y y} (str l)])
                      (map (fn [a b] [(+ a 0.2) b]) (range 1 (inc size)) (range size 0 -1)))
-                (map (fn [[y l]] [:text.coordinate {:x (+ size 0.2) :y y} (str l)])
+                (map (fn [[y l]] [:text.coordinate {:x (+ size 0.5) :y y} (str l)])
                      (map (fn [a b] [(+ a 0.2) b]) (range 1 (inc size)) (range size 0 -1)))))) 
 
 (defn board-svg []
