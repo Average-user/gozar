@@ -74,8 +74,8 @@
 
 (defn board-svg []
   (let [size @(re-frame/subscribe [:board-size])]
-   [:svg {:width    "100%"
-          :height   "100%"
+   [:svg {:width    "97%"
+          :height   "97%"
           :view-box (str "0 0 " (+ 2 size) " " (+ 2 size))}
     (let [board @(re-frame/subscribe [:board])
           moves (get-moves)
