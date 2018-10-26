@@ -2,7 +2,7 @@ circle.b {
   fill: transparent; }
 
 circle.w {
-  fill: rgba(150, 0, 0, 0); }
+  fill: transparent; }
 
 circle.w:hover {
   fill: rgba(255, 255, 255, 0.5);
@@ -77,6 +77,9 @@ h1 {
   font-size: 3em;
   color: #373737; }
 
+span {
+  color: #373737; }
+
 abbr {
   color: #373737; }
 
@@ -93,3 +96,6 @@ a.pass {
   padding: 0.1em;
   border-radius: 10px;
   background-color: #c8c8c8; }
+
+.coordinate {
+  font: bold 0.024em sans-serif; }
