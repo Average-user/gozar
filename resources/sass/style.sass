@@ -1,22 +1,26 @@
+$my-gray: rgb(55,55,55);
+$stone-border: 0.04;
+$transparent: rgba(0,0,0,0);
+  
 circle.b
-  fill: rgba(0,0,0,0)
+  fill: transparent
 
 circle.w
-  fill: rgba(150,0,0,0)
+  fill: transparent
 
 circle.w:hover
   fill: rgba(255,255,255,0.5)
   stroke: black
-  stroke-width: 0.04
+  stroke-width: $stone-border
 
 circle.b:hover
   fill: rgba(0,0,0,0.5)
   stroke: black
-  stroke-width: 0.04
+  stroke-width: $stone-border
 
-circle.n
+  circle.n
   stroke: black
-  stroke-width: 0.04
+  stroke-width: $stone-border
 
 .info
   padding: 4px
@@ -41,13 +45,13 @@ div.right
   padding: 0.5em
   cursor: pointer
   display: inline-block
-  color: rgb(55,55,55)
+  color: $my-gray
 
 .boxed:hover
   border: 1px solid rgb(170,170,170)
 
 .button-icon
-  color: rgb(55,55,55)
+  color: $my-gray
   font-size: 1.15em
 
 .button-icon:hover
@@ -75,16 +79,19 @@ body
 
 h1
   font-size: 3em
-  color: rgb(55,55,55)
+  color: $my-gray
+
+span
+  color: $my-gray
 
 abbr
-  color: rgb(55,55,55)
+  color: $my-gray
 
 github
   color: black
 
 p
-  color: rgb(55,55,55)
+  color: $my-gray
 
 a.pass
   width: 97%
