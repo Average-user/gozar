@@ -28,4 +28,4 @@
                  :info         {:result       (:result example-game)
                                 :player-black (:player-black example-game)
                                 :player-white (:player-white example-game)}
-                 :filename     "Not file selected"})
+                 :filename     "Load file ..."})

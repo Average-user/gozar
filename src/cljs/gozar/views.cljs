@@ -5,7 +5,7 @@
             [gozar.sgfparser :as parser]
             [re-frame.core :as re-frame]))
 
-(def r 0.47)
+(def r 0.46)
 
 (defn distance [[a b] [c d]]
   (let [abs (fn [x] (if (< x 0) (* -1 x) x))]
@@ -22,10 +22,10 @@
     @(re-frame/subscribe [:moves])))
 
 (defn draw-line [x1 y1 x2 y2]
-  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style {:stroke "rgb(0,0,0)" :stroke-width 0.04}}])
+  [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2 :style {:stroke "rgb(0,0,0)" :stroke-width 0.03}}])
 
 (defn draw-dots [size]
-  (map (fn [[x y]] [:circle {:cx (+ 1 x) :cy (+ 1 y) :r 0.13 :fill "black"}])
+  (map (fn [[x y]] [:circle {:cx (+ 1 x) :cy (+ 1 y) :r 0.10 :fill "black"}])
        (case size
          19 [[3 3] [15 15] [3 15] [15 3] [9 3] [3 9] [9 9] [9 15] [15 9]]
          13 [[3 3] [9 3] [3 9] [9 9] [6 6]]
@@ -57,7 +57,8 @@
          stones)))
 
 (defn draw-board-base [{:keys [stones] :as board} size]
-  (into [:g [:rect {:x 0 :y 0 :width (inc size) :height (inc size) :fill "rgb(219,176,98)"}]]
+  (into [:g [:rect {:x 0 :y 0 :width (inc size) :height (inc size) :fill "#dfbd6d"
+                    :rx "0.20" :ry "0.20"}]]
         (concat (draw-dots size)
                 (mapv (fn [[x1 y1 x2 y2]] (draw-line (inc x1) (inc y1) (inc x2) (inc y2)))
                       (concat (map vector (range size) (repeat 0) (range size) (repeat (dec size)))
@@ -76,7 +77,7 @@
   (let [size @(re-frame/subscribe [:board-size])]
    [:svg {:width    "97%"
           :height   "97%"
-          :view-box (str "0 0 " (+ 2 size) " " (+ 2 size))}
+          :view-box (str "0 0 " (+ 1 size) " " (+ 1 size))}
     (let [board @(re-frame/subscribe [:board])
           moves (get-moves)
           move  (get-move)]
@@ -233,7 +234,7 @@
       "Report any bug, erros or recommendations via "
       [:a {:href "https://github.com/Average-user/gozar#readme"}
        "github"]
-      ". The most likely cause of failures is that the SGF's "
-      "parser doesn't handle complex files."]]
+      ". The most likely cause of failures is the SGF's "
+      "parser which doesn't handle files with multiple branches."]]
     [:div.right
      [board-svg]]])
