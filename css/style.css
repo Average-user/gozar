@@ -7,16 +7,16 @@ circle.w {
 circle.w:hover {
   fill: rgba(255, 255, 255, 0.5);
   stroke: black;
-  stroke-width: 0.04; }
+  stroke-width: 0.03; }
 
 circle.b:hover {
   fill: rgba(0, 0, 0, 0.5);
   stroke: black;
-  stroke-width: 0.04; }
+  stroke-width: 0.03; }
 
 circle.n {
   stroke: black;
-  stroke-width: 0.04; }
+  stroke-width: 0.03; }
 
 .info {
   padding: 4px;
@@ -98,4 +98,4 @@ a.pass {
   background-color: #c8c8c8; }
 
 .coordinate {
-  font: bold 0.024em sans-serif; }
+  font: bold 0.020em sans-serif; }
